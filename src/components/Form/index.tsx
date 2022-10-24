@@ -1,11 +1,23 @@
-import { ChangeEvent, FocusEvent, FormEvent } from "react";
-import { Button } from "@mui/material";
+import { ChangeEvent, FormEvent } from "react";
+import { Button, TextField } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 import { IMock } from "../../types/IMock";
 import styles from "./Form.module.scss";
 
-export interface IFormProps {
+interface IFormProps {
   setSavedTasks: Dispatch<SetStateAction<IMock[]>>;
+}
+
+interface IError {
+  taskType: boolean;
+  description: boolean;
+  timeToDo: boolean;
+}
+
+interface IHelperText {
+  taskType: string;
+  description: string;
+  timeToDo: string;
 }
 
 const Form = ({ setSavedTasks }: IFormProps) => {
@@ -16,21 +28,55 @@ const Form = ({ setSavedTasks }: IFormProps) => {
     timeToDo: 0
   });
 
+  const [error, setError] = useState<IError>({
+    taskType: false,
+    description: false,
+    timeToDo: false,
+  });
+  const [helperText, setHelperText] = useState<IHelperText>({
+    taskType: '',
+    description: '',
+    timeToDo: '',
+  });
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    let type = event.target.type;
     let name = event.target.name;
     let value: string | number = event.target.value;
-    if (type === "number") {
-      value = Number(value);
+    let length = event.target.value.length;
+    let numRegex = new RegExp(/[0-9]+/);
+    if (length > 0) {
+      if (name === "timeToDo") {
+        if (!numRegex.test(value)) {
+          setError(prevState => ({...prevState, timeToDo: true}));
+          setHelperText(prevState => ({
+            ...prevState, 
+            timeToDo: 'Введите числовое значение'
+          }));
+          setFormState(prevState => ({...prevState, [name]: value}));
+        } else {
+          setError(prevState => ({...prevState, [name]: false}));
+          setHelperText(prevState => ({...prevState, [name]: ''}));
+          setFormState(prevState => ({...prevState, [name]: Number(value)}));
+        } 
+      } else {
+        setError(prevState => ({...prevState, [name]: false}));
+        setHelperText(prevState => ({...prevState, [name]: ''}));
+        setFormState(prevState => ({...prevState, [name]: value}));
+      }
+    } else {
+      setError(prevState => ({...prevState, [name]: true}));
+      setHelperText(prevState => ({
+        ...prevState, 
+        [name]: 'Заполните поле'
+      }));
+      setFormState(prevState => ({...prevState, [name]: value}));
     }
-    setFormState(prevState => ({...prevState, [name]: value}));
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (formState.taskType === '' || formState.description === '' || 
-      formState.timeToDo === 0) {
-      return alert("Заполните все поля");
+    if (error.taskType || error.description || error.timeToDo) {
+      return;
     } else {
       setSavedTasks(prevState => {
         return [...prevState, formState];
@@ -44,59 +90,44 @@ const Form = ({ setSavedTasks }: IFormProps) => {
     }
   };
 
-  const checkOnEmptyField = (event: FocusEvent<HTMLInputElement, Element>) => {
-    let name = event.target.name;
-    let taskLabel = "";
-    let value = event.target.value;
-    if (name === "taskType") {
-      taskLabel = "Тип";
-    } else if (name === "description") {
-      taskLabel = "Описание";
-    } else if (name === "timeToDo") {
-      taskLabel = "Время выполнения";
-    }
-    if (value === "" || value === "0") {
-      return alert(`Поле "${taskLabel}" не заполнено!`);
-    }
-  };
-
   return (
     <div className={styles.formContainer}>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="taskType">
-          Task Type
-          <input 
-            type="text" 
-            id="taskType"
-            name="taskType" 
-            value={formState.taskType} 
-            onChange={handleInputChange} 
-            onBlur={checkOnEmptyField}
+        <div className={styles.labels}>
+          <label htmlFor="taskType">Task Type</label>
+          <label htmlFor="description">Description</label>
+          <label htmlFor="timeToDo">Time to do</label>
+        </div>
+        <div className={styles.inputs}>
+          <TextField 
+            className={styles.taskInput}
+            id="taskType" 
+            name="taskType"
+            value={formState.taskType}
+            onChange={handleInputChange}
+            error={error.taskType}
+            helperText={helperText.taskType}
           />
-        </label>
-        <label htmlFor="description">
-          Description
-          <input 
-            type="text" 
-            id="description"
+          <TextField 
+            className={styles.taskInput}
+            id="description" 
             name="description"
-            value={formState.description} 
-            onChange={handleInputChange} 
-            onBlur={checkOnEmptyField}
+            value={formState.description}
+            onChange={handleInputChange}
+            error={error.description}
+            helperText={helperText.description}
           />
-        </label>
-        <label htmlFor="timeToDo">
-          Time to do
-          <input 
-            type="number" 
-            id="timeToDo"
+          <TextField 
+            className={styles.taskInput}
+            id="timeToDo" 
             name="timeToDo"
-            value={formState.timeToDo} 
-            onChange={handleInputChange} 
-            onBlur={checkOnEmptyField}
+            value={formState.timeToDo}
+            onChange={handleInputChange}
+            error={error.timeToDo}
+            helperText={helperText.timeToDo}
           />
-        </label>
-        <Button type="submit" variant="outlined">Add</Button>
+          <Button type="submit" variant="outlined">Add</Button> 
+        </div>
       </form>
     </div>
   );

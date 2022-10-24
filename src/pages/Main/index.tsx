@@ -9,8 +9,6 @@ import { IMock } from "../../types/IMock";
 const Main: FC = () => {
   const [renderingTasks, setRenderingTasks] = useState<IMock[]>(taskMock);
   const [savedTasks, setSavedTasks] = useState<IMock[]>(taskMock);
-  console.log("render", renderingTasks);
-  console.log("saved", savedTasks);
 
   const deleteTask = (id: number) => {
     const filteredTasks = savedTasks.filter((el: IMock) => el.id !== id);
