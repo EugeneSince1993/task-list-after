@@ -1,0 +1,40 @@
+.filterByTime {
+  margin-bottom: 15px;
+
+  h4 {
+    margin-bottom: 15px;
+  }
+
+  .inputRangeContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+
+    .inputRange {
+
+      label {
+        display: block;
+        margin-bottom: 15px;
+      }
+
+      .inputFrom, .inputTo {
+        width: 100px;
+        margin-right: 10px;
+        
+        div {
+
+          input {
+            padding: 10px;
+            border: 1px solid #000;
+            border-radius: 5px;
+          }
+        }
+      }
+    }
+
+    button {
+      height: fit-content;
+      padding: 10px 15px 8px;
+    }
+  }
+}
